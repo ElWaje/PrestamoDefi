@@ -1,0 +1,44 @@
+
+# Dependencias
+node_modules/
+
+# Archivos de entorno y configuración sensible
+.env
+.env.local
+.secret
+
+# Directorios de compilación y despliegue de Truffle/Hardhat
+build/
+artifacts/
+cache/
+
+# Archivos específicos de IDE o editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Archivos de sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos de logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Directorios opcionales de Hardhat
+coverage/
+coverage.json
+gasReporterOutput.json
+
+# Archivos de salida de Truffle
+*.json
+!truffle-config.js
+!hardhat.config.js
+
+# Archivos de salida de Remix IDE (si se utiliza localmente)
+*.sol.js
+*.sol.map
