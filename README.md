@@ -21,23 +21,21 @@
 ### Instalación
 
 - Clone el repositorio a su máquina local.
-
-```bash
-git clone https://github.com/tuUsuario/PrestamoDeFi.git
-
+  ```bash
+  git clone https://github.com/tuUsuario/PrestamoDeFi.git
 - Instalar las dependencias necesarias.
-npm install
+  npm install
 
 ### Despliegue
 
 Para desplegar este contrato en una red de prueba (testnet) como Rinkeby o en la red principal (mainnet), puede utilizar herramientas como Remix, Truffle o Hardhat.
 
-Usando Remix
-Abra Remix.
-Cree un nuevo archivo y copie el contenido del contrato PrestamoDeFi.sol en este.
-Compile el contrato usando la versión de compilador correspondiente.
-Conecte Remix con su Ethereum wallet.
-Despliegue el contrato en la red deseada.
+- Usando Remix
+- Abra Remix.
+- Cree un nuevo archivo y copie el contenido del contrato PrestamoDeFi.sol en este.
+- Compile el contrato usando la versión de compilador correspondiente.
+- Conecte Remix con su Ethereum wallet.
+- Despliegue el contrato en la red deseada.
 
 ### Uso
 
