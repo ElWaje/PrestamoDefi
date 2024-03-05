@@ -24,6 +24,7 @@
   ```bash
   git clone https://github.com/tuUsuario/PrestamoDeFi.git
 - Instalar las dependencias necesarias.
+  ```bash
   npm install
   
 ### Despliegue
