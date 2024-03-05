@@ -37,7 +37,6 @@ gasReporterOutput.json
 # Archivos de salida de Truffle
 *.json
 !truffle-config.js
-!hardhat.config.js
 
 # Archivos de salida de Remix IDE (si se utiliza localmente)
 *.sol.js
