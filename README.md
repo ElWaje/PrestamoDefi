@@ -20,15 +20,16 @@
 
 ### Instalación
 
-1. Clone el repositorio a su máquina local.
+- Clone el repositorio a su máquina local.
 
 ```bash
 git clone https://github.com/tuUsuario/PrestamoDeFi.git
 
-2. Instalar las dependencias necesarias.
+- Instalar las dependencias necesarias.
 npm install
 
-### Despliegue 
+### Despliegue
+
 Para desplegar este contrato en una red de prueba (testnet) como Rinkeby o en la red principal (mainnet), puede utilizar herramientas como Remix, Truffle o Hardhat.
 
 Usando Remix
@@ -39,31 +40,35 @@ Conecte Remix con su Ethereum wallet.
 Despliegue el contrato en la red deseada.
 
 ### Uso
+
 #### Funciones Principales
-1. altaPrestamista
+
+- altaPrestamista
 function altaPrestamista(address nuevoPrestamista) public soloSocioPrincipal
 Registra un nuevo prestamista en el sistema.
 
-2. altaCliente
+- altaCliente
 function altaCliente(address nuevoCliente) public soloEmpleadoPrestamista
 Registra un nuevo cliente en el sistema.
 
-3. depositarGarantia
+- depositarGarantia
 function depositarGarantia() public payable soloClienteRegistrado
 Permite a los clientes depositar garantías en Ether.
 
-4. solicitarPrestamo
+- solicitarPrestamo
 function solicitarPrestamo(uint256 monto, uint256 plazo) public soloClienteRegistrado returns (uint256)
 Permite a los clientes registrados solicitar un préstamo.
 
-5. aprobarPrestamo
+- aprobarPrestamo
 function aprobarPrestamo(address prestatario, uint256 id) public soloEmpleadoPrestamista
 Permite a los empleados prestamistas aprobar préstamos pendientes.
 
 ## Licencia
+
 Distribuido bajo la Licencia MIT. Vea LICENSE para más información.
 
 ## Contacto
+
 Enrique Solis - elwaje@gmail.com
 
-## Link del Proyecto: https://github.com/ElWaje/PrestamoDefi
+Link del Proyecto: https://github.com/ElWaje/PrestamoDefi
