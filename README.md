@@ -15,7 +15,7 @@
 ### Prerequisitos
 
 - Ethereum wallet como [MetaMask](https://metamask.io/).
-- [Node.js](https://nodejs.org/) y [npm](https://www.npmjs.com/) (para herramientas de desarrollo como [Truffle](https://www.trufflesuite.com/) o [Hardhat](https://hardhat.org/)).
+- [Node.js](https://nodejs.org/) y [npm](https://www.npmjs.com/) (para herramientas de desarrollo como [Truffle](https://www.trufflesuite.com/)).
 - Conocimiento básico de Solidity y el entorno de desarrollo Ethereum.
 
 ### Instalación
