@@ -25,7 +25,7 @@
   git clone https://github.com/tuUsuario/PrestamoDeFi.git
 - Instalar las dependencias necesarias.
   npm install
-
+  
 ### Despliegue
 
 Para desplegar este contrato en una red de prueba (testnet) como Rinkeby o en la red principal (mainnet), puede utilizar herramientas como Remix, Truffle o Hardhat.
