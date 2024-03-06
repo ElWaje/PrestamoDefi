@@ -1,13 +1,15 @@
 # PrestamoDeFi
 
-`PrestamoDeFi` es un contrato inteligente implementado en Solidity para la red Ethereum, diseñado para gestionar un sistema de préstamos DeFi (Finanzas Descentralizadas). Este contrato permite a los usuarios solicitar préstamos, depositar garantías, y a los administradores del sistema, aprobar préstamos, y gestionar clientes y prestamistas.
+`PrestamoDeFi` es un contrato inteligente implementado en Solidity para la red Ethereum, diseñado para gestionar un sistema de préstamos DeFi (Finanzas Descentralizadas). Este contrato permite a los usuarios solicitar préstamos, depositar y recuperar garantías, y a los administradores del sistema, aprobar préstamos, liquidar garantías y gestionar clientes y prestamistas.
 
 ## Características
 
 - Registro de clientes y prestamistas.
-- Depósito de garantías en Ether.
+- Depósito de garantías en Ether por parte de los clientes.
+- Deposito de fondos en el contrato por el socio principal.
 - Solicitud y aprobación de préstamos.
 - Reembolso de préstamos y liquidación de garantías.
+- Devolución de la garantía al cliente bajo ciertas condiciones.
 - Consultas de préstamos por prestatario y detalles específicos de préstamos.
 
 ## Cómo Empezar
@@ -40,7 +42,7 @@ Para desplegar este contrato en una red de prueba (testnet) como Rinkeby o en la
 
 ### Uso
 
-#### Funciones Principales
+#### Funciones
 
 - altaPrestamista
 function altaPrestamista(address nuevoPrestamista) public soloSocioPrincipal
@@ -54,6 +56,10 @@ Registra un nuevo cliente en el sistema.
 function depositarGarantia() public payable soloClienteRegistrado
 Permite a los clientes depositar garantías en Ether.
 
+- depositarFondos
+function depositarFondos() public payable soloSocioPrincipal
+Permite al socio principal depositar Ether en el contrato para financiar los préstamos.
+
 - solicitarPrestamo
 function solicitarPrestamo(uint256 monto, uint256 plazo) public soloClienteRegistrado returns (uint256)
 Permite a los clientes registrados solicitar un préstamo.
@@ -61,6 +67,18 @@ Permite a los clientes registrados solicitar un préstamo.
 - aprobarPrestamo
 function aprobarPrestamo(address prestatario, uint256 id) public soloEmpleadoPrestamista
 Permite a los empleados prestamistas aprobar préstamos pendientes.
+
+- reembolsarPrestamo
+function reembolsarPrestamo(uint256 id) public soloClienteRegistrado
+Permite a los clientes reembolsar sus préstamos.
+
+- liquidarGarantia
+function liquidarGarantia(address prestatario, uint256 id) public soloEmpleadoPrestamista
+Permite a los empleados prestamistas liquidar la garantía de préstamos no reembolsados después de su vencimiento.
+
+- solicitarDevolucionGarantia
+function solicitarDevolucionGarantia() public soloClienteRegistrado 
+Permite a los clientes solicitar la devolución de su garantía, siempre que no tengan préstamos aprobados sin reembolsar o liquidar. 
 
 ## Licencia
 
