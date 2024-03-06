@@ -33,7 +33,7 @@
 
 Para desplegar este contrato en una red de prueba (testnet) como Rinkeby o en la red principal (mainnet), puede utilizar herramientas como Remix, Truffle o Hardhat.
 
-- Usando Remix
+- Usando Remix.
 - Abra Remix.
 - Cree un nuevo archivo y copie el contenido del contrato PrestamoDeFi.sol en este.
 - Compile el contrato usando la versión de compilador correspondiente.
@@ -44,28 +44,32 @@ Para desplegar este contrato en una red de prueba (testnet) como Rinkeby o en la
 
 #### Funciones
 
-- altaPrestamista
+- altaPrestamista.
+```bash
 function altaPrestamista(address nuevoPrestamista) public soloSocioPrincipal
 Registra un nuevo prestamista en el sistema.
 
-- altaCliente
-function altaCliente(address nuevoCliente) public soloEmpleadoPrestamista
+- altaCliente.
+```bash
+function altaCliente(address nuevoCliente) public soloEmpleadoPrestamista.
 Registra un nuevo cliente en el sistema.
 
-- depositarGarantia
-function depositarGarantia() public payable soloClienteRegistrado
+- depositarGarantia.
+```bash
+function depositarGarantia() public payable soloClienteRegistrado.
+```bash
 Permite a los clientes depositar garantías en Ether.
 
-- depositarFondos
-function depositarFondos() public payable soloSocioPrincipal
+- depositarFondos.
+function depositarFondos() public payable soloSocioPrincipal.
 Permite al socio principal depositar Ether en el contrato para financiar los préstamos.
 
-- solicitarPrestamo
+- solicitarPrestamo.
 function solicitarPrestamo(uint256 monto, uint256 plazo) public soloClienteRegistrado returns (uint256)
 Permite a los clientes registrados solicitar un préstamo.
 
 - aprobarPrestamo
-function aprobarPrestamo(address prestatario, uint256 id) public soloEmpleadoPrestamista
+function aprobarPrestamo(address prestatario, uint256 id) public soloEmpleadoPrestamista.
 Permite a los empleados prestamistas aprobar préstamos pendientes.
 
 - reembolsarPrestamo
