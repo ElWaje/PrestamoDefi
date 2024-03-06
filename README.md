@@ -45,19 +45,15 @@ Para desplegar este contrato en una red de prueba (testnet) como Rinkeby o en la
 #### Funciones
 
 - altaPrestamista.
-```bash
 function altaPrestamista(address nuevoPrestamista) public soloSocioPrincipal
 Registra un nuevo prestamista en el sistema.
 
 - altaCliente.
-```bash
 function altaCliente(address nuevoCliente) public soloEmpleadoPrestamista.
 Registra un nuevo cliente en el sistema.
 
 - depositarGarantia.
-```bash
 function depositarGarantia() public payable soloClienteRegistrado.
-```bash
 Permite a los clientes depositar garantías en Ether.
 
 - depositarFondos.
