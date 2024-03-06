@@ -44,40 +44,40 @@ Para desplegar este contrato en una red de prueba (testnet) como Rinkeby o en la
 
 #### Funciones
 
-- altaPrestamista.
-function altaPrestamista(address nuevoPrestamista) public soloSocioPrincipal
+- altaPrestamista:
+function altaPrestamista(address nuevoPrestamista) public soloSocioPrincipal:
 Registra un nuevo prestamista en el sistema.
 
-- altaCliente.
-function altaCliente(address nuevoCliente) public soloEmpleadoPrestamista.
+- altaCliente:
+function altaCliente(address nuevoCliente) public soloEmpleadoPrestamista:
 Registra un nuevo cliente en el sistema.
 
-- depositarGarantia.
-function depositarGarantia() public payable soloClienteRegistrado.
+- depositarGarantia-
+function depositarGarantia() public payable soloClienteRegistrado:
 Permite a los clientes depositar garantías en Ether.
 
-- depositarFondos.
-function depositarFondos() public payable soloSocioPrincipal.
+- depositarFondos-
+function depositarFondos() public payable soloSocioPrincipal:
 Permite al socio principal depositar Ether en el contrato para financiar los préstamos.
 
-- solicitarPrestamo.
-function solicitarPrestamo(uint256 monto, uint256 plazo) public soloClienteRegistrado returns (uint256)
+- solicitarPrestamo-
+function solicitarPrestamo(uint256 monto, uint256 plazo) public soloClienteRegistrado returns (uint256):
 Permite a los clientes registrados solicitar un préstamo.
 
-- aprobarPrestamo
-function aprobarPrestamo(address prestatario, uint256 id) public soloEmpleadoPrestamista.
+- aprobarPrestamo-
+function aprobarPrestamo(address prestatario, uint256 id) public soloEmpleadoPrestamista:
 Permite a los empleados prestamistas aprobar préstamos pendientes.
 
-- reembolsarPrestamo
-function reembolsarPrestamo(uint256 id) public soloClienteRegistrado
+- reembolsarPrestamo-
+function reembolsarPrestamo(uint256 id) public soloClienteRegistrado:
 Permite a los clientes reembolsar sus préstamos.
 
-- liquidarGarantia
-function liquidarGarantia(address prestatario, uint256 id) public soloEmpleadoPrestamista
+- liquidarGarantia-
+function liquidarGarantia(address prestatario, uint256 id) public soloEmpleadoPrestamista:
 Permite a los empleados prestamistas liquidar la garantía de préstamos no reembolsados después de su vencimiento.
 
-- solicitarDevolucionGarantia
-function solicitarDevolucionGarantia() public soloClienteRegistrado 
+- solicitarDevolucionGarantia-
+function solicitarDevolucionGarantia() public soloClienteRegistrado:
 Permite a los clientes solicitar la devolución de su garantía, siempre que no tengan préstamos aprobados sin reembolsar o liquidar. 
 
 ## Licencia
