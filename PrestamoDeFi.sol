@@ -47,7 +47,7 @@ contract PrestamoDeFi {
     }
 
     constructor() {
-        socioPrincipal = msg.sender;
+        socioPrincipal = payable(msg.sender);
         empleadosPrestamista[msg.sender] = true;
     }
 
@@ -56,7 +56,8 @@ contract PrestamoDeFi {
         empleadosPrestamista[nuevoPrestamista] = true;
     }
 
-    function altaCliente(address nuevoCliente) public soloEmpleadoPrestamista {
+    function altaCliente(address nuevoCliente) public soloEmpleadoPrestamista {        
+        require(!empleadosPrestamista[nuevoCliente], "Un empleado no puede ser cliente.");
         require(!clientes[nuevoCliente].activado, "El cliente ya esta registrado.");
         clientes[nuevoCliente].activado = true;
         clientes[nuevoCliente].saldoGarantia = 0;
@@ -105,19 +106,15 @@ contract PrestamoDeFi {
         emit PrestamoAprobado(prestatario, prestamo.monto);
     }
 
-    function reembolsarPrestamo(uint256 id) public soloClienteRegistrado {
+    function reembolsarPrestamo(uint256 id) public payable soloClienteRegistrado {
         require(id > 0 && id <= clientes[msg.sender].prestamoIds.length, "ID de prestamo invalido.");            
-        require(msg.value == prestamo.monto, "El monto a reembolsar no coincide con el monto del prestamo.");
         Prestamo storage prestamo = clientes[msg.sender].prestamos[id];
+        require(msg.value == prestamo.monto, "El monto a reembolsar no coincide con el monto del prestamo.");        
         require(prestamo.estado == EstadoPrestamo.Aprobado, "El prestamo no esta aprobado o ya fue manejado.");
         require(prestamo.tiempoLimite >= block.timestamp, "El tiempo para reembolsar ha expirado.");
 
         prestamo.estado = EstadoPrestamo.Reembolsado;
-        clientes[msg.sender].saldoGarantia -= prestamo.monto;
-
-        // Devolver el monto reembolsado a la garantía del cliente
-        clientes[msg.sender].saldoGarantia += msg.value;
-
+        
         // Transferir el monto del préstamo al socio principal
         socioPrincipal.transfer(msg.value);
 
@@ -155,12 +152,12 @@ contract PrestamoDeFi {
     // Función para solicitar la devolución de la garantía
     function solicitarDevolucionGarantia() public soloClienteRegistrado {
         Cliente storage cliente = clientes[msg.sender];
-        require(cliente.saldoGarantia > 0, "No hay garantía para devolver.");
+        require(cliente.saldoGarantia > 0, "No hay garantia para devolver.");
 
         // Verificar que el cliente no tenga préstamos aprobados sin reembolsar o liquidar
         for (uint i = 0; i < cliente.prestamoIds.length; i++) {
             Prestamo storage prestamo = cliente.prestamos[cliente.prestamoIds[i]];
-            require(prestamo.estado != EstadoPrestamo.Aprobado, "Existen préstamos aprobados sin reembolsar o liquidar.");
+            require(prestamo.estado != EstadoPrestamo.Aprobado, "Existen prestamos aprobados sin reembolsar o liquidar.");
         }
 
         // Devolver la garantía al cliente
