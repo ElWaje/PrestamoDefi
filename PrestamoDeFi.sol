@@ -44,27 +44,27 @@ contract PrestamoDeFi {
     modifier soloClienteRegistrado() {
         require(clientes[msg.sender].activado, "El cliente no esta registrado.");
         _;
-        }
+    }
 
-        constructor() {
-            socioPrincipal = msg.sender;
-            empleadosPrestamista[msg.sender] = true;
-        }
+    constructor() {
+        socioPrincipal = msg.sender;
+        empleadosPrestamista[msg.sender] = true;
+    }
 
-        function altaPrestamista(address nuevoPrestamista) public soloSocioPrincipal {
-            require(!empleadosPrestamista[nuevoPrestamista], "El prestamista ya esta registrado.");
-            empleadosPrestamista[nuevoPrestamista] = true;
-        }
+    function altaPrestamista(address nuevoPrestamista) public soloSocioPrincipal {
+        require(!empleadosPrestamista[nuevoPrestamista], "El prestamista ya esta registrado.");
+        empleadosPrestamista[nuevoPrestamista] = true;
+    }
 
-        function altaCliente(address nuevoCliente) public soloEmpleadoPrestamista {
-            require(!clientes[nuevoCliente].activado, "El cliente ya esta registrado.");
-            clientes[nuevoCliente].activado = true;
-            clientes[nuevoCliente].saldoGarantia = 0;
-        }
+    function altaCliente(address nuevoCliente) public soloEmpleadoPrestamista {
+        require(!clientes[nuevoCliente].activado, "El cliente ya esta registrado.");
+        clientes[nuevoCliente].activado = true;
+        clientes[nuevoCliente].saldoGarantia = 0;
+    }
 
-        function depositarGarantia() public payable soloClienteRegistrado {
-            clientes[msg.sender].saldoGarantia += msg.value;
-        }
+    function depositarGarantia() public payable soloClienteRegistrado {
+        clientes[msg.sender].saldoGarantia += msg.value;
+    }
 
         // Función para permitir al socio principal depositar fondos en el contrato
     function depositarFondos() public payable soloSocioPrincipal {
@@ -72,85 +72,85 @@ contract PrestamoDeFi {
         // El Ether enviado se añade automáticamente al balance del contrato.
     }
 
-        function solicitarPrestamo(uint256 monto, uint256 plazo) public soloClienteRegistrado returns (uint256) {
-            require(clientes[msg.sender].saldoGarantia >= monto, "Saldo de garantia insuficiente para el monto solicitado.");
-            uint256 nuevoId = clientes[msg.sender].prestamoIds.length + 1;
+    function solicitarPrestamo(uint256 monto, uint256 plazo) public soloClienteRegistrado returns (uint256) {
+        require(clientes[msg.sender].saldoGarantia >= monto, "Saldo de garantia insuficiente para el monto solicitado.");
+        uint256 nuevoId = clientes[msg.sender].prestamoIds.length + 1;
             
-            Prestamo storage nuevoPrestamo = clientes[msg.sender].prestamos[nuevoId];
-            nuevoPrestamo.id = nuevoId;
-            nuevoPrestamo.prestatario = msg.sender;
-            nuevoPrestamo.monto = monto;
-            nuevoPrestamo.plazo = plazo;
-            nuevoPrestamo.tiempoSolicitud = block.timestamp;
-            nuevoPrestamo.estado = EstadoPrestamo.Pendiente;
+        Prestamo storage nuevoPrestamo = clientes[msg.sender].prestamos[nuevoId];
+        nuevoPrestamo.id = nuevoId;
+        nuevoPrestamo.prestatario = msg.sender;
+        nuevoPrestamo.monto = monto;
+        nuevoPrestamo.plazo = plazo;
+        nuevoPrestamo.tiempoSolicitud = block.timestamp;
+        nuevoPrestamo.estado = EstadoPrestamo.Pendiente;
 
-            clientes[msg.sender].prestamoIds.push(nuevoId);
+        clientes[msg.sender].prestamoIds.push(nuevoId);
 
-            emit SolicitudPrestamo(msg.sender, monto, plazo);
+        emit SolicitudPrestamo(msg.sender, monto, plazo);
 
-            return nuevoId;
-        }
+        return nuevoId;
+    }
 
-        function aprobarPrestamo(address prestatario, uint256 id) public soloEmpleadoPrestamista {
-            require(id > 0 && id <= clientes[prestatario].prestamoIds.length, "ID de prestamo invalido.");
-            Prestamo storage prestamo = clientes[prestatario].prestamos[id];
-            require(prestamo.estado == EstadoPrestamo.Pendiente, "El prestamo no esta pendiente de aprobacion.");
+    function aprobarPrestamo(address prestatario, uint256 id) public soloEmpleadoPrestamista {
+        require(id > 0 && id <= clientes[prestatario].prestamoIds.length, "ID de prestamo invalido.");
+        Prestamo storage prestamo = clientes[prestatario].prestamos[id];
+        require(prestamo.estado == EstadoPrestamo.Pendiente, "El prestamo no esta pendiente de aprobacion.");
 
-            prestamo.estado = EstadoPrestamo.Aprobado;
-            prestamo.tiempoLimite = block.timestamp + prestamo.plazo;
+        prestamo.estado = EstadoPrestamo.Aprobado;
+        prestamo.tiempoLimite = block.timestamp + prestamo.plazo;
             
-            // Transferir el monto del préstamo del contrato al prestatario
-            payable(prestatario).transfer(prestamo.monto);
+        // Transferir el monto del préstamo del contrato al prestatario
+        payable(prestatario).transfer(prestamo.monto);
 
-            emit PrestamoAprobado(prestatario, prestamo.monto);
-        }
+        emit PrestamoAprobado(prestatario, prestamo.monto);
+    }
 
-        function reembolsarPrestamo(uint256 id) public soloClienteRegistrado {
-            require(id > 0 && id <= clientes[msg.sender].prestamoIds.length, "ID de prestamo invalido.");            
-            require(msg.value == prestamo.monto, "El monto a reembolsar no coincide con el monto del prestamo.");
-            Prestamo storage prestamo = clientes[msg.sender].prestamos[id];
-            require(prestamo.estado == EstadoPrestamo.Aprobado, "El prestamo no esta aprobado o ya fue manejado.");
-            require(prestamo.tiempoLimite >= block.timestamp, "El tiempo para reembolsar ha expirado.");
+    function reembolsarPrestamo(uint256 id) public soloClienteRegistrado {
+        require(id > 0 && id <= clientes[msg.sender].prestamoIds.length, "ID de prestamo invalido.");            
+        require(msg.value == prestamo.monto, "El monto a reembolsar no coincide con el monto del prestamo.");
+        Prestamo storage prestamo = clientes[msg.sender].prestamos[id];
+        require(prestamo.estado == EstadoPrestamo.Aprobado, "El prestamo no esta aprobado o ya fue manejado.");
+        require(prestamo.tiempoLimite >= block.timestamp, "El tiempo para reembolsar ha expirado.");
 
-            prestamo.estado = EstadoPrestamo.Reembolsado;
-            clientes[msg.sender].saldoGarantia -= prestamo.monto;
+        prestamo.estado = EstadoPrestamo.Reembolsado;
+        clientes[msg.sender].saldoGarantia -= prestamo.monto;
 
-            // Devolver el monto reembolsado a la garantía del cliente
-            clientes[msg.sender].saldoGarantia += msg.value;
+        // Devolver el monto reembolsado a la garantía del cliente
+        clientes[msg.sender].saldoGarantia += msg.value;
 
-            // Transferir el monto del préstamo al socio principal
-            socioPrincipal.transfer(msg.value);
+        // Transferir el monto del préstamo al socio principal
+        socioPrincipal.transfer(msg.value);
 
-            emit PrestamoReembolsado(msg.sender, prestamo.monto);
-        }
+        emit PrestamoReembolsado(msg.sender, prestamo.monto);
+    }
 
-        function liquidarGarantia(address prestatario, uint256 id) public soloEmpleadoPrestamista {
-            require(id > 0 && id <= clientes[prestatario].prestamoIds.length, "ID de prestamo invalido.");
-            Prestamo storage prestamo = clientes[prestatario].prestamos[id];
-            require(prestamo.estado == EstadoPrestamo.Aprobado, "El prestamo no esta aprobado o ya fue manejado.");
-            require(prestamo.tiempoLimite < block.timestamp, "El tiempo limite para el prestamo aun no ha expirado.");
-            // Asegurarse de que hay suficiente garantía para cubrir el monto del préstamo
-            require(clientes[prestatario].saldoGarantia >= prestamo.monto, "Garantia insuficiente.");
+    function liquidarGarantia(address prestatario, uint256 id) public soloEmpleadoPrestamista {
+        require(id > 0 && id <= clientes[prestatario].prestamoIds.length, "ID de prestamo invalido.");
+        Prestamo storage prestamo = clientes[prestatario].prestamos[id];
+        require(prestamo.estado == EstadoPrestamo.Aprobado, "El prestamo no esta aprobado o ya fue manejado.");
+        require(prestamo.tiempoLimite < block.timestamp, "El tiempo limite para el prestamo aun no ha expirado.");
+        // Asegurarse de que hay suficiente garantía para cubrir el monto del préstamo
+        require(clientes[prestatario].saldoGarantia >= prestamo.monto, "Garantia insuficiente.");
 
-            prestamo.estado = EstadoPrestamo.Liquidado;
+        prestamo.estado = EstadoPrestamo.Liquidado;
             
-            // Transferir el monto del préstamo al socio principal
-            socioPrincipal.transfer(prestamo.monto);
+        // Transferir el monto del préstamo al socio principal
+        socioPrincipal.transfer(prestamo.monto);
 
-            // Actualizar el saldo de garantía del cliente
-            clientes[prestatario].saldoGarantia -= prestamo.monto;
+        // Actualizar el saldo de garantía del cliente
+        clientes[prestatario].saldoGarantia -= prestamo.monto;
 
-            emit GarantiaLiquidada(prestatario, prestamo.monto);
-        }
+        emit GarantiaLiquidada(prestatario, prestamo.monto);
+    }
 
-        function obtenerPrestamosPorPrestatario(address prestatario) public view returns (uint256[] memory) {
-            return clientes[prestatario].prestamoIds;
-        }
+    function obtenerPrestamosPorPrestatario(address prestatario) public view returns (uint256[] memory) {
+        return clientes[prestatario].prestamoIds;
+    }
 
     function obtenerDetalleDePrestamo(address prestatario, uint256 id) public view returns (Prestamo memory) {
-            require(id > 0 && id <= clientes[prestatario].prestamoIds.length, "ID de prestamo invalido.");
-            return clientes[prestatario].prestamos[id];
-        }
+        require(id > 0 && id <= clientes[prestatario].prestamoIds.length, "ID de prestamo invalido.");
+        return clientes[prestatario].prestamos[id];
+    }
     
     // Función para solicitar la devolución de la garantía
     function solicitarDevolucionGarantia() public soloClienteRegistrado {
