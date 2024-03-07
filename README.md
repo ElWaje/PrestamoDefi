@@ -4,13 +4,12 @@
 
 ## Características
 
-- Registro de clientes y prestamistas.
-- Depósito de garantías en Ether por parte de los clientes.
-- Deposito de fondos en el contrato por el socio principal.
-- Solicitud y aprobación de préstamos.
-- Reembolso de préstamos y liquidación de garantías.
-- Devolución de la garantía al cliente bajo ciertas condiciones.
-- Consultas de préstamos por prestatario y detalles específicos de préstamos.
+- Registro de clientes y prestamistas: Gestiona el registro y la autorización de los participantes en el sistema.
+- Depósito de garantías en Ether: Permite a los clientes depositar garantías en Ether.
+- Depósito de fondos en el contrato: Habilita al socio principal a aportar fondos para financiar los préstamos.
+- Solicitud y aprobación de préstamos: Facilita la solicitud de préstamos por parte de los clientes y su aprobación por los administradores.
+- Reembolso de préstamos y liquidación de garantías: Permite a los clientes reembolsar sus préstamos y a los administradores liquidar garantías cuando sea necesario.
+- Consultas de préstamos y detalles específicos: Ofrece la capacidad de consultar los préstamos existentes y sus detalles.
 
 ## Cómo Empezar
 
@@ -59,6 +58,10 @@ Permite a los clientes depositar garantías en Ether.
 - depositarFondos-
 function depositarFondos() public payable soloSocioPrincipal:
 Permite al socio principal depositar Ether en el contrato para financiar los préstamos.
+
+- consultarFondos-
+function depositarFondos() public payable soloSocioPrincipal:
+Permite al socio principal consultar los fondos disponibles en el contrato.
 
 - solicitarPrestamo-
 function solicitarPrestamo(uint256 monto, uint256 plazo) public soloClienteRegistrado returns (uint256):
