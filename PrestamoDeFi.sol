@@ -1,3 +1,4 @@
+
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
@@ -15,14 +16,14 @@ contract PrestamoDeFi {
         uint256 tiempoLimite;
         EstadoPrestamo estado;
     }
-    
+
     struct Cliente {
         bool activado;
         uint256 saldoGarantia;
         mapping(uint256 => Prestamo) prestamos;
         uint256[] prestamoIds;
     }
-    
+
     mapping(address => Cliente) public clientes;
     mapping(address => bool) public empleadosPrestamista;
 
@@ -56,7 +57,7 @@ contract PrestamoDeFi {
         empleadosPrestamista[nuevoPrestamista] = true;
     }
 
-    function altaCliente(address nuevoCliente) public soloEmpleadoPrestamista {        
+    function altaCliente(address nuevoCliente) public soloEmpleadoPrestamista {
         require(!empleadosPrestamista[nuevoCliente], "Un empleado no puede ser cliente.");
         require(!clientes[nuevoCliente].activado, "El cliente ya esta registrado.");
         clientes[nuevoCliente].activado = true;
@@ -67,16 +68,18 @@ contract PrestamoDeFi {
         clientes[msg.sender].saldoGarantia += msg.value;
     }
 
-        // Función para permitir al socio principal depositar fondos en el contrato
     function depositarFondos() public payable soloSocioPrincipal {
         require(msg.value > 0, "Debe depositar una cantidad de Ether positiva.");
-        // El Ether enviado se añade automáticamente al balance del contrato.
+    }
+
+    function consultarFondos() public view soloSocioPrincipal returns (uint256) {
+        return address(this).balance;
     }
 
     function solicitarPrestamo(uint256 monto, uint256 plazo) public soloClienteRegistrado returns (uint256) {
         require(clientes[msg.sender].saldoGarantia >= monto, "Saldo de garantia insuficiente para el monto solicitado.");
         uint256 nuevoId = clientes[msg.sender].prestamoIds.length + 1;
-            
+
         Prestamo storage nuevoPrestamo = clientes[msg.sender].prestamos[nuevoId];
         nuevoPrestamo.id = nuevoId;
         nuevoPrestamo.prestatario = msg.sender;
@@ -97,11 +100,14 @@ contract PrestamoDeFi {
         Prestamo storage prestamo = clientes[prestatario].prestamos[id];
         require(prestamo.estado == EstadoPrestamo.Pendiente, "El prestamo no esta pendiente de aprobacion.");
 
+        uint256 fondosContrato = address(this).balance;
+        require(fondosContrato >= prestamo.monto, "Fondos insuficientes en el contrato para cubrir el prestamo.");
+
+        (bool success, ) = prestatario.call{value: prestamo.monto}("");
+        require(success, "Transferencia de fondos fallida.");
+
         prestamo.estado = EstadoPrestamo.Aprobado;
         prestamo.tiempoLimite = block.timestamp + prestamo.plazo;
-            
-        // Transferir el monto del préstamo del contrato al prestatario
-        payable(prestatario).transfer(prestamo.monto);
 
         emit PrestamoAprobado(prestatario, prestamo.monto);
     }
@@ -112,11 +118,11 @@ contract PrestamoDeFi {
         require(msg.value == prestamo.monto, "El monto a reembolsar no coincide con el monto del prestamo.");        
         require(prestamo.estado == EstadoPrestamo.Aprobado, "El prestamo no esta aprobado o ya fue manejado.");
         require(prestamo.tiempoLimite >= block.timestamp, "El tiempo para reembolsar ha expirado.");
-
-        prestamo.estado = EstadoPrestamo.Reembolsado;
         
         // Transferir el monto del préstamo al socio principal
         socioPrincipal.transfer(msg.value);
+
+        prestamo.estado = EstadoPrestamo.Reembolsado;
 
         emit PrestamoReembolsado(msg.sender, prestamo.monto);
     }
@@ -128,14 +134,14 @@ contract PrestamoDeFi {
         require(prestamo.tiempoLimite < block.timestamp, "El tiempo limite para el prestamo aun no ha expirado.");
         // Asegurarse de que hay suficiente garantía para cubrir el monto del préstamo
         require(clientes[prestatario].saldoGarantia >= prestamo.monto, "Garantia insuficiente.");
-
-        prestamo.estado = EstadoPrestamo.Liquidado;
             
         // Transferir el monto del préstamo al socio principal
         socioPrincipal.transfer(prestamo.monto);
 
         // Actualizar el saldo de garantía del cliente
         clientes[prestatario].saldoGarantia -= prestamo.monto;
+
+        prestamo.estado = EstadoPrestamo.Liquidado;
 
         emit GarantiaLiquidada(prestatario, prestamo.monto);
     }
