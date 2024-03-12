@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract PrestamoDeFiBM {
+contract PrestamoDeFi {
     address public socioPrincipal;
     mapping(address => Cliente) public clientes;
     mapping(address => bool) public empleadosPrestamista;
