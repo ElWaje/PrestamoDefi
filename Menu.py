@@ -1,114 +1,189 @@
-import tkinter as tk
-from tkinter import simpledialog, messagebox
+
 from PrestamoDeFi import (
     alta_prestamista, alta_cliente, depositar_garantia, solicitar_prestamo,
     aprobar_prestamo, reembolsar_prestamo, liquidar_garantia,
-    obtener_prestamos_por_prestatario, obtener_detalle_de_prestamo
+    obtener_prestamos_por_prestatario, obtener_detalle_de_prestamo, get_web3
 )
+from getpass import getpass
 
-def is_valid_eth_address(address):
-    return Web3.isAddress(address)
+web3 = get_web3()
 
-def gui_alta_prestamista():
-    address = simpledialog.askstring("Alta Prestamista", "Dirección del nuevo prestamista:")
-    if address and is_valid_eth_address(address):
-        resultado = alta_prestamista(address)
-        messagebox.showinfo("Resultado", resultado)
-    else:
-        messagebox.showerror("Error", "Dirección Ethereum inválida.")
+def solicitar_credenciales_usuario():
+    direccion = input("Ingrese su dirección Ethereum: ")
+    while not web3.is_address(direccion):
+        print("La dirección ingresada no es válida. Por favor, intente de nuevo.")
+        direccion = input("Ingrese su dirección Ethereum: ")
+    clave_privada = getpass("Ingrese su clave privada (la entrada será oculta): ")
+    print("Clave privada capturada con éxito.")
+    return direccion, clave_privada
 
-def gui_alta_cliente():
-    address = simpledialog.askstring("Alta Cliente", "Dirección del nuevo cliente:")
-    if address and is_valid_eth_address(address):
-        resultado = alta_cliente(address)
-        messagebox.showinfo("Resultado", resultado)
-    else:
-        messagebox.showerror("Error", "Dirección Ethereum inválida.")
-
-def gui_depositar_garantia():
-    valor = simpledialog.askstring("Depositar Garantía", "Valor a depositar en Ether:")
-    if valor:
+def validar_entrada(mensaje, tipo='string'):
+    entrada = input(mensaje)
+    if tipo == 'ether':
         try:
-            valor_wei = Web3.toWei(float(valor), 'ether')
-            resultado = depositar_garantia(valor_wei)
-            messagebox.showinfo("Resultado", resultado)
+            entrada = web3.to_wei(float(entrada), 'ether')
         except ValueError:
-            messagebox.showerror("Error", "Valor inválido.")
-
-def gui_solicitar_prestamo():
-    monto = simpledialog.askstring("Solicitar Préstamo", "Monto del préstamo en Ether:")
-    plazo = simpledialog.askstring("Solicitar Préstamo", "Plazo del préstamo en segundos:")
-    if monto and plazo:
+            print("Entrada inválida. Por favor, ingrese un número.")
+            return None
+    elif tipo == 'int':
         try:
-            monto_wei = Web3.toWei(float(monto), 'ether')
-            resultado = solicitar_prestamo(monto_wei, int(plazo))
-            messagebox.showinfo("Resultado", resultado)
+            entrada = int(entrada)
         except ValueError:
-            messagebox.showerror("Error", "Monto o plazo inválido.")
+            print("Entrada inválida. Por favor, ingrese un número entero.")
+            return None
+    return entrada
 
-def gui_aprobar_prestamo():
-    prestatario = simpledialog.askstring("Aprobar Préstamo", "Dirección del prestatario:")
-    prestamo_id = simpledialog.askstring("Aprobar Préstamo", "ID del préstamo:")
-    if prestatario and prestamo_id and is_valid_eth_address(prestatario):
-        resultado = aprobar_prestamo(prestatario, prestamo_id)
-        messagebox.showinfo("Resultado", resultado)
-    else:
-        messagebox.showerror("Error", "Dirección Ethereum del prestatario inválida o ID del préstamo inválido.")
-
-def gui_reembolsar_prestamo():
-    prestamo_id = simpledialog.askstring("Reembolsar Préstamo", "ID del préstamo:")
-    valor = simpledialog.askstring("Reembolsar Préstamo", "Valor del reembolso en Ether:")
-    if prestamo_id and valor:
+def handle_alta_prestamista(direccion_usuario, clave_privada_usuario):
+    nueva_direccion = input("Dirección del nuevo prestamista: ")
+    if web3.is_address(nueva_direccion):
         try:
-            valor_wei = Web3.toWei(float(valor), 'ether')
-            resultado = reembolsar_prestamo(prestamo_id, valor_wei)
-            messagebox.showinfo("Resultado", resultado)
-        except ValueError:
-            messagebox.showerror("Error", "Valor inválido.")
-
-def gui_liquidar_garantia():
-    prestatario = simpledialog.askstring("Liquidar Garantía", "Dirección del prestatario:")
-    prestamo_id = simpledialog.askstring("Liquidar Garantía", "ID del préstamo:")
-    if prestatario and prestamo_id and is_valid_eth_address(prestatario):
-        resultado = liquidar_garantia(prestatario, prestamo_id)
-        messagebox.showinfo("Resultado", resultado)
+            resultado = alta_prestamista(direccion_usuario, clave_privada_usuario, nueva_direccion)
+            print(resultado)
+        except Exception as e:
+            print(f"Se produjo un error al intentar dar de alta un prestamista: {e}")
     else:
-        messagebox.showerror("Error", "Dirección Ethereum del prestatario inválida o ID del préstamo inválido.")
+        print("Dirección inválida.")
 
-def gui_obtener_prestamos_por_prestatario():
-    prestatario = simpledialog.askstring("Obtener Préstamos", "Dirección del prestatario:")
-    if prestatario and is_valid_eth_address(prestatario):
-        resultado = obtener_prestamos_por_prestatario(prestatario)
-        messagebox.showinfo("Préstamos", str(resultado))
+def handle_alta_cliente(direccion_usuario, clave_privada_usuario):
+    nueva_direccion = input("Dirección del nuevo cliente: ")
+    if web3.is_address(nueva_direccion):
+        try:
+            resultado = alta_cliente(direccion_usuario, clave_privada_usuario, nueva_direccion)
+            print(resultado)
+        except Exception as e:
+            print(f"Se produjo un error al intentar dar de alta un cliente: {e}")
     else:
-        messagebox.showerror("Error", "Dirección Ethereum inválida.")
+        print("Dirección inválida.")
 
-def gui_obtener_detalle_de_prestamo():
-    prestatario = simpledialog.askstring("Detalle del Préstamo", "Dirección del prestatario:")
-    prestamo_id = simpledialog.askstring("Detalle del Préstamo", "ID del préstamo:")
-    if prestatario and prestamo_id and is_valid_eth_address(prestatario):
-        resultado = obtener_detalle_de_prestamo(prestatario, prestamo_id)
-        messagebox.showinfo("Detalle", str(resultado))
+def handle_depositar_garantia(direccion_usuario, clave_privada_usuario):
+    valor = validar_entrada("Valor a depositar en Ether: ", 'ether')                
+    if valor is not None:
+        try:
+            resultado = depositar_garantia(direccion_usuario, clave_privada_usuario, valor)
+            print(resultado)
+        except Exception as e:
+            print(f"Se produjo un error al intentar depositar garantía: {e}")
     else:
-        messagebox.showerror("Error", "Dirección Ethereum del prestatario inválida o ID del préstamo inválido.")
+        print("Debe ingresar un valor válido.")
 
-def setup_gui():
-    root = tk.Tk()
-    root.title("Interfaz PrestamoDeFi")
-    
-     # Creación de botones para cada función
-    tk.Button(root, text="Alta de Prestamista", command=gui_alta_prestamista).pack(pady=5)
-    tk.Button(root, text="Alta de Cliente", command=gui_alta_cliente).pack(pady=5)
-    tk.Button(root, text="Depositar Garantía", command=gui_depositar_garantia).pack(pady=5)
-    tk.Button(root, text="Solicitar Préstamo", command=gui_solicitar_prestamo).pack(pady=5)
-    tk.Button(root, text="Aprobar Préstamo", command=gui_aprobar_prestamo).pack(pady=5)
-    tk.Button(root, text="Reembolsar Préstamo", command=gui_reembolsar_prestamo).pack(pady=5)
-    tk.Button(root, text="Liquidar Garantía", command=gui_liquidar_garantia).pack(pady=5)
-    tk.Button(root, text="Obtener Préstamos por Prestatario", command=gui_obtener_prestamos_por_prestatario).pack(pady=5)
-    tk.Button(root, text="Obtener Detalle de Préstamo", command=gui_obtener_detalle_de_prestamo).pack(pady=5)
+def handle_solicitar_prestamo(direccion_usuario, clave_privada_usuario):
+    monto = validar_entrada("Monto del préstamo en Ether: ", 'ether')
+    plazo = validar_entrada("Plazo del préstamo en segundos: ", 'int')
+    if monto is not None and plazo is not None:
+        try:
+            resultado = solicitar_prestamo(direccion_usuario, clave_privada_usuario, monto, plazo)
+            print(resultado)
+        except Exception as e:
+            print(f"Se produjo un error al intentar solicitar un préstamo: {e}")
+    else:
+        print("Datos inválidos.")
 
-    root.mainloop()
+def handle_aprobar_prestamo(direccion_usuario, clave_privada_usuario):
+    prestatario = input("Dirección del prestatario: ")
+    id_prestamo = validar_entrada("ID del préstamo: ", 'int')
+    if web3.is_address(prestatario) and id_prestamo is not None:
+        try:
+            resultado = aprobar_prestamo(direccion_usuario, clave_privada_usuario, prestatario, id_prestamo)
+            print(resultado)
+        except Exception as e:
+            print(f"Se produjo un error al intentar aprobar un préstamo: {e}")
+    else:
+        print("Datos inválidos.")
+
+def handle_reembolsar_prestamo(direccion_usuario, clave_privada_usuario):
+    id_prestamo = validar_entrada("ID del préstamo a reembolsar: ", 'int')
+    valor = validar_entrada("Valor del reembolso en Ether: ", 'ether')
+    if id_prestamo is not None and valor is not None:
+        try:
+            resultado = reembolsar_prestamo(direccion_usuario, clave_privada_usuario, id_prestamo, valor)
+            print(resultado)
+        except Exception as e:
+            print(f"Se produjo un error al intentar reembolsar un préstamo: {e}")
+    else:
+        print("Datos inválidos.")
+
+def handle_liquidar_garantia(direccion_usuario, clave_privada_usuario):
+    prestatario = input("Dirección del prestatario cuya garantía se va a liquidar: ")
+    id_prestamo = validar_entrada("ID del préstamo cuya garantía se va a liquidar: ", 'int')
+    if web3.is_address(prestatario) and id_prestamo is not None:
+        try:
+            resultado = liquidar_garantia(direccion_usuario, clave_privada_usuario, prestatario, id_prestamo)
+            print(resultado)
+        except Exception as e:
+            print(f"Se produjo un error al intentar liquidar una garantía: {e}")
+    else:
+        print("Datos inválidos.")
+
+def handle_obtener_prestamos_por_prestatario(direccion_usuario):
+    prestatario = input("Dirección del prestatario: ")
+    if web3.is_address(prestatario):
+        try:
+            resultado = obtener_prestamos_por_prestatario(prestatario)
+            print(resultado)
+        except Exception as e:
+            print(f"Se produjo un error al intentar obtener los préstamos por prestatario: {e}")
+    else:
+        print("Dirección inválida.")
+
+def handle_obtener_detalle_de_prestamo(direccion_usuario):
+    prestatario = input("Dirección del prestatario: ")
+    id_prestamo = validar_entrada("ID del préstamo: ", 'int')
+    if web3.is_address(prestatario) and id_prestamo is not None:
+        try:
+            resultado = obtener_detalle_de_prestamo(prestatario, id_prestamo)
+            print(resultado)
+        except Exception as e:
+            print(f"Se produjo un error al intentar obtener el detalle de un préstamo: {e}")
+    else:
+        print("Datos inválidos.")
+
+def main_menu():
+    while True:
+        print("\nMenú Principal:")
+        print("1. Alta de Prestamista")
+        print("2. Alta de Cliente")
+        print("3. Depositar Garantía")
+        print("4. Solicitar Préstamo")
+        print("5. Aprobar Préstamo")
+        print("6. Reembolsar Préstamo")
+        print("7. Liquidar Garantía")
+        print("8. Obtener Préstamos por Prestatario")
+        print("9. Obtener Detalle de Préstamo")
+        print("0. Salir")
+
+        opcion = input("Seleccione una opción: ")
+        if opcion == '0':
+            
+            print("¡Hasta la próxima aventura financiera! ") 
+            print(" Enrique Solís ")
+            break
+
+        direccion_usuario, clave_privada_usuario = solicitar_credenciales_usuario()
+
+        try:
+            if opcion == '1':
+                handle_alta_prestamista(direccion_usuario, clave_privada_usuario)
+            elif opcion == '2':
+                handle_alta_cliente(direccion_usuario, clave_privada_usuario)
+            elif opcion == '3':
+                handle_depositar_garantia(direccion_usuario, clave_privada_usuario)
+            elif opcion == '4':
+                handle_solicitar_prestamo(direccion_usuario, clave_privada_usuario)
+            elif opcion == '5':
+                handle_aprobar_prestamo(direccion_usuario, clave_privada_usuario)
+            elif opcion == '6':
+                handle_reembolsar_prestamo(direccion_usuario, clave_privada_usuario)
+            elif opcion == '7':
+                handle_liquidar_garantia(direccion_usuario, clave_privada_usuario)
+            elif opcion == '8':
+                handle_obtener_prestamos_por_prestatario(direccion_usuario)
+            elif opcion == '9':
+                handle_obtener_detalle_de_prestamo(direccion_usuario)
+            else:
+                print("Opción inválida. Por favor, intente de nuevo.")
+        except Exception as e:
+            print(f"Error al procesar la solicitud: {e}")
 
 if __name__ == "__main__":
-    setup_gui()
- 
+    main_menu()
+    
