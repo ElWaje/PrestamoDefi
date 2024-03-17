@@ -1,148 +1,242 @@
 from web3 import Web3, HTTPProvider
-from web3.middleware import geth_poa_middleware
-import json
 from web3.exceptions import (
     TransactionNotFound,
     ContractLogicError,
+    ValidationError,
     InvalidAddress
 )
+import json
+from web3.middleware import geth_poa_middleware
+from getpass import getpass
 
-# Configuración inicial
-web3 = Web3(HTTPProvider('http://127.0.0.1:7545'))
+# Conexión a Ganache
+web3 = Web3(HTTPProvider('http://127.0.0.1:7545'))  # Ganache endpoint
 web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
-contract_address = web3.toChecksumAddress('tu_direccion_del_contrato')
-private_key = 'tu_clave_privada'
+# Dirección y ABI del contrato
+contract_address = web3.to_checksum_address('0x25238d7855c60436DA77483CDEDB037291958023')
+with open('PrestamoDeFi.json') as f:
+    contract_abi = json.load(f)
 
-with open('path_to_your_contract_abi.json', 'r') as abi_definition:
-    contract_abi = json.load(abi_definition)
-
+# Cargar el contrato
 contract = web3.eth.contract(address=contract_address, abi=contract_abi)
 
-from_address = web3.eth.account.privateKeyToAccount(private_key).address
-
-def sign_and_send_transaction(function_call, private_key, value=0):
-    nonce = web3.eth.getTransactionCount(from_address)
-    transaction = function_call.buildTransaction({
-        'chainId': web3.eth.chain_id,
-        'gas': 2000000,
-        'gasPrice': web3.toWei('50', 'gwei'),
-        'nonce': nonce,
-        'value': value,
-    })
-    signed_txn = web3.eth.account.signTransaction(transaction, private_key=private_key)
+def sign_and_send_transaction(function_call, from_address, private_key, value=0):
     try:
-        txn_hash = web3.eth.sendRawTransaction(signed_txn.rawTransaction)
-        receipt = web3.eth.waitForTransactionReceipt(txn_hash)
-        return "Éxito", receipt
+        nonce = web3.eth.get_transaction_count(web3.to_checksum_address(from_address))
+        gas_estimate = function_call.estimate_gas({'from': web3.to_checksum_address(from_address)})
+        
+        # Aumentar el límite de gas en 100,000 unidades
+        transaction = function_call.build_transaction({
+            'chainId': web3.eth.chain_id,
+            'gas': gas_estimate + 100000,
+            'gasPrice': web3.to_wei('50', 'gwei'),
+            'nonce': nonce,
+            'value': value,
+            'from': web3.to_checksum_address(from_address)
+        })
+
+        signed_txn = web3.eth.account.sign_transaction(transaction, private_key)
+        txn_hash = web3.eth.send_raw_transaction(signed_txn.rawTransaction)
+        receipt = web3.eth.wait_for_transaction_receipt(txn_hash)
+        return "Éxito", receipt.transactionHash.hex()
+    except ValueError as e:
+        print("Error al enviar la transacción:", e)
     except TransactionNotFound:
-        return "Error", "La transacción no se encontró después de ser enviada."
+        print("Transacción no encontrada después de enviar.")
     except ContractLogicError as e:
-        return "Error de contrato", str(e)
+        print("Error de lógica del contrato:", e)
+    except ValidationError as e:
+        print(f"Error de validación: {e}")
+    except Exception as e:
+        print("Error desconocido:", e)
+        
+def alta_prestamista(direccion_prestamista, clave_privada, nueva_direccion):
+    
+    try:
+        es_socio_principal = direccion_prestamista.lower() == contract.functions.socioPrincipal().call().lower()
+        es_prestamista_autorizado = contract.functions.empleadosPrestamista(web3.to_checksum_address(direccion_prestamista)).call()
+        
+        if not es_socio_principal and not es_prestamista_autorizado:
+            return "Error", "No tiene permisos para realizar esta acción."
+
+        if not web3.is_address(nueva_direccion):
+            return "Error", "La dirección del nuevo prestamista no es válida."
+
+        estado, tx_hash = sign_and_send_transaction(
+            contract.functions.altaPrestamista(web3.to_checksum_address(nueva_direccion)),
+            web3.to_checksum_address(direccion_prestamista),
+            clave_privada
+        )
+        return estado, f"Prestamista agregado con éxito. Hash de la transacción: {tx_hash}"
+    
+    except (InvalidAddress, ValidationError) as e:
+        return "Error", f"Error al procesar la transacción: {e}"
+    except ContractLogicError as e:
+        return "Error", f"Error de lógica de contrato: {e}"
+    except Exception as e:
+        return "Error", f"Error inesperado: {e}"
+    
+def alta_cliente(direccion_prestamista, clave_privada, nueva_direccion):
+    try:
+        if not contract.functions.empleadosPrestamista(web3.to_checksum_address(direccion_prestamista)).call():
+            return "Error", "No tiene permisos para realizar esta acción."
+        if not web3.is_address(nueva_direccion):
+            return "Error", "La dirección del nuevo cliente no es válida."
+        estado, tx_hash = sign_and_send_transaction(
+            contract.functions.altaCliente(web3.to_checksum_address(nueva_direccion)),
+            web3.to_checksum_address(direccion_prestamista),
+            clave_privada
+        )
+        return estado, f"Cliente agregado con éxito. Hash de la transacción: {tx_hash}"
+    except ContractLogicError as e:
+        return "Error de lógica del contrato", str(e)
     except Exception as e:
         return "Error", str(e)
-    
-def alta_prestamista(nuevo_prestamista):
-    if not web3.isAddress(nuevo_prestamista):
-        return "Dirección del prestamista no válida."
-    function_call = contract.functions.altaPrestamista(nuevo_prestamista)
-    estado, mensaje = sign_and_send_transaction(function_call, private_key)
-    if estado == "Éxito":
-        return f"Prestamista añadido con éxito, tx hash: {mensaje.transactionHash.hex()}"
-    else:
-        return f"No se pudo completar altaPrestamista: {mensaje}"
 
-def alta_cliente(nuevo_cliente):
-    if not web3.isAddress(nuevo_cliente):
-        return "Dirección del cliente no válida."
-    function_call = contract.functions.altaCliente(nuevo_cliente)
-    estado, mensaje = sign_and_send_transaction(function_call, private_key)
-    if estado == "Éxito":
-        return f"Cliente añadido con éxito, tx hash: {mensaje.transactionHash.hex()}"
-    else:
-        return f"No se pudo completar altaCliente: {mensaje}"
-
-def depositar_garantia(valor):
+def depositar_garantia(direccion_cliente, clave_privada, valor_ether):
     try:
-        valor = int(valor)  # Asumiendo que 'valor' es introducido en Wei por la GUI
-    except ValueError:
-        return "El valor debe ser un número entero."
-    function_call = contract.functions.depositarGarantia()
-    estado, mensaje = sign_and_send_transaction(function_call, private_key, value=valor)
-    if estado == "Éxito":
-        return "Garantía depositada con éxito."
-    else:
-        return f"No se pudo depositar la garantía: {mensaje}"
+        # Convertir el valor a Wei desde Ether y asegurar que es positivo
+        valor_wei = web3.to_wei(valor_ether, 'ether')
+        if valor_wei <= 0:
+            print("El valor a depositar debe ser mayor a 0.")
+            return
 
-def solicitar_prestamo(monto, plazo):
-    try:
-        monto = int(monto)
-        plazo = int(plazo)
-    except ValueError:
-        return "Monto y plazo deben ser números enteros."
-    function_call = contract.functions.solicitarPrestamo(monto, plazo)
-    estado, mensaje = sign_and_send_transaction(function_call, private_key)
-    if estado == "Éxito":
-        return "Préstamo solicitado con éxito."
-    else:
-        return f"No se pudo solicitar el préstamo: {mensaje}"
+        # Obtener el saldo de la cuenta
+        account_balance = web3.eth.get_balance(web3.to_checksum_address(direccion_cliente))
+        print(f"Saldo de la cuenta: {web3.from_wei(account_balance, 'ether')} ETH")
 
-def aprobar_prestamo(prestatario, prestamo_id):
-    if not web3.isAddress(prestatario):
-        return "Dirección del prestatario no válida."
-    try:
-        prestamo_id = int(prestamo_id)
-    except ValueError:
-        return "ID de préstamo debe ser un número entero."
-    function_call = contract.functions.aprobarPrestamo(prestatario, prestamo_id)
-    estado, mensaje = sign_and_send_transaction(function_call, private_key)
-    if estado == "Éxito":
-        return "Préstamo aprobado con éxito."
-    else:
-        return f"No se pudo aprobar el préstamo: {mensaje}"
+        # Verificar si el saldo es suficiente para cubrir el valor de la transacción
+        if valor_wei > account_balance:
+            print("Error: Fondos insuficientes para cubrir el valor de la transacción.")
+            return
 
-def reembolsar_prestamo(prestamo_id, valor):
-    try:
-        prestamo_id = int(prestamo_id)
-        valor = int(valor)  # Asumiendo que 'valor' es introducido en Wei por la GUI
-    except ValueError:
-        return "ID de préstamo y valor deben ser números enteros."
-    function_call = contract.functions.reembolsarPrestamo(prestamo_id)
-    estado, mensaje = sign_and_send_transaction(function_call, private_key, value=valor)
-    if estado == "Éxito":
-        return "Préstamo reembolsado con éxito."
-    else:
-        return f"No se pudo reembolsar el préstamo: {mensaje}"
+        # Obtener el estimado del gas
+        gas_estimate = contract.functions.depositarGarantia().estimateGas({'from': web3.to_checksum_address(direccion_cliente)})
 
-def liquidar_garantia(prestatario, prestamo_id):
-    if not web3.isAddress(prestatario):
-        return "Dirección del prestatario no válida."
-    try:
-        prestamo_id = int(prestamo_id)
-    except ValueError:
-        return "ID de préstamo debe ser un número entero."
-    function_call = contract.functions.liquidarGarantia(prestatario, prestamo_id)
-    estado, mensaje = sign_and_send_transaction(function_call, private_key)
-    if estado == "Éxito":
-        return "Garantía liquidada con éxito."
-    else:
-        return f"No se pudo liquidar la garantía: {mensaje}"
+        # Calcular el valor de la transacción
+        transaction_value = gas_estimate * web3.eth.gasPrice + valor_wei
+        print(f"Valor estimado del gas: {gas_estimate}")
+        print(f"Valor de la transacción: {web3.from_wei(transaction_value, 'ether')} ETH")
 
-def obtener_prestamos_por_prestatario(prestatario):
-    if not web3.isAddress(prestatario):
-        return "Dirección del prestatario no válida."
-    try:
-        prestamos = contract.functions.obtenerPrestamosPorPrestatario(prestatario).call()
-        return f"Préstamos del prestatario {prestatario}: {prestamos}"
+        # Realizar la transacción
+        cliente_activado, saldo_garantia = contract.functions.clientes(web3.to_checksum_address(direccion_cliente)).call()
+        if not cliente_activado:
+            print("Error: No es un cliente activado o no tiene permisos para realizar esta acción.")
+            return
+
+        estado, tx_hash = sign_and_send_transaction(
+            contract.functions.depositarGarantia(),
+            web3.to_checksum_address(direccion_cliente),
+            clave_privada,
+            valor_wei
+        )
+        
+        if estado == "Éxito":
+            # Obtener el saldo de garantía actualizado después del depósito
+            _, saldo_garantia_actualizado = contract.functions.clientes(web3.to_checksum_address(direccion_cliente)).call()
+            print(f"Garantía depositada con éxito. Hash de la transacción: {tx_hash}. Valor depositado: {valor_ether} ETH.")
+            print(f"Saldo de garantía actual: {saldo_garantia_actualizado} Wei")
+        else:
+            print(estado)
+    except ContractLogicError as e:
+        print(f"Error de lógica del contrato: {e}")
     except Exception as e:
-        return f"Error al obtener préstamos por prestatario: {str(e)}"
+        print(f"Error al intentar depositar garantía: {e}")
 
-def obtener_detalle_de_prestamo(prestatario, prestamo_id):
-    if not web3.isAddress(prestatario):
-        return "Dirección del prestatario no válida."
+def solicitar_prestamo(direccion_cliente, clave_privada, monto, plazo):
     try:
-        prestamo_id = int(prestamo_id)
-        prestamo = contract.functions.obtenerDetalleDePrestamo(prestatario, prestamo_id).call()
-        return f"Detalle del préstamo {prestamo_id} para el prestatario {prestatario}: {prestamo}"
+        if monto <= 0 or plazo <= 0:
+            return "Error", "El monto y el plazo del préstamo deben ser mayores a 0."
+        
+        if not contract.functions.clientes(web3.to_checksum_address(direccion_cliente)).call()[0]:
+            return "Error", "No es un cliente activado o no tiene permisos para realizar esta acción."
+        
+        estado, tx_hash = sign_and_send_transaction(
+            contract.functions.solicitarPrestamo(monto, plazo),
+            web3.to_checksum_address(direccion_cliente),
+            clave_privada
+        )
+        return estado, f"Préstamo solicitado con éxito. Hash de la transacción: {tx_hash}. Monto solicitado: {web3.fromWei(monto, 'ether')} ETH, Plazo: {plazo} segundos."
+    except ContractLogicError as e:
+        return "Error de lógica del contrato", str(e)
     except Exception as e:
-        return f"Error al obtener detalle de préstamo: {str(e)}"
+        return "Error", str(e)
+           
+def aprobar_prestamo(direccion_prestamista, clave_privada, direccion_prestatario, prestamo_id):
+    try:
+        es_prestamista_autorizado = contract.functions.empleadosPrestamista(web3.to_checksum_address(direccion_prestamista)).call()
+        if not es_prestamista_autorizado:
+            return "Error", "No tiene permisos para realizar esta acción."
+        if not web3.is_address(direccion_prestatario):
+            return "Error", "Dirección del prestatario no válida."
+        estado, tx_hash = sign_and_send_transaction(
+            contract.functions.aprobarPrestamo(web3.to_checksum_address(direccion_prestatario), prestamo_id),
+            web3.to_checksum_address(direccion_prestamista),
+            clave_privada
+        )
+        return estado, f"Préstamo aprobado con éxito. Hash de la transacción: {tx_hash}"
+    except ContractLogicError as e:
+        print(f"Error de lógica de contrato: {e}")
+    except Exception as e:
+        print(f"Error inesperado: {e}")
+
+def reembolsar_prestamo(direccion_cliente, clave_privada, prestamo_id, valor):
+    try:
+        es_cliente_activado = contract.functions.clientes(web3.to_checksum_address(direccion_cliente)).call()[0]
+        if not es_cliente_activado:
+            return "Error", "No es un cliente activado."
+        estado, tx_hash = sign_and_send_transaction(
+            contract.functions.reembolsarPrestamo(prestamo_id),
+            web3.to_checksum_address(direccion_cliente),
+            clave_privada,
+            valor
+        )
+        return estado, f"Préstamo reembolsado con éxito. Hash de la transacción: {tx_hash}"
+    except ContractLogicError as e:
+        print(f"Error de lógica de contrato: {e}")
+    except Exception as e:
+        print(f"Error inesperado: {e}")
+
+def liquidar_garantia(direccion_prestamista, clave_privada, direccion_prestatario, prestamo_id):
+    try:
+        es_prestamista_autorizado = contract.functions.empleadosPrestamista(web3.to_checksum_address(direccion_prestamista)).call()
+        if not es_prestamista_autorizado:
+            return "Error", "No tiene permisos para realizar esta acción."
+        if not web3.is_address(direccion_prestatario):
+            return "Error", "Dirección del prestatario no válida."
+        estado, tx_hash = sign_and_send_transaction(
+            contract.functions.liquidarGarantia(web3.to_checksum_address(direccion_prestatario), prestamo_id),
+            web3.to_checksum_address(direccion_prestamista),
+            clave_privada
+        )
+        return estado, f"Garantía liquidada con éxito. Hash de la transacción: {tx_hash}"
+    except ContractLogicError as e:
+        print(f"Error de lógica de contrato: {e}")
+    except Exception as e:
+        print(f"Error inesperado: {e}")
+
+def obtener_prestamos_por_prestatario(direccion_prestatario):
+    try:
+        if not web3.is_address(direccion_prestatario):
+            return "Error", "Dirección del prestatario no válida."
+        prestamos = contract.functions.obtenerPrestamosPorPrestatario(web3.to_checksum_address(direccion_prestatario)).call()
+        return "Éxito", prestamos
+    except ContractLogicError as e:
+        print(f"Error de lógica de contrato: {e}")
+    except Exception as e:
+        print(f"Error al obtener los préstamos: {e}")
+
+def obtener_detalle_de_prestamo(direccion_prestatario, prestamo_id):
+    try:
+        if not web3.is_address(direccion_prestatario):
+            return "Error", "Dirección del prestatario no válida."
+        detalle = contract.functions.obtenerDetalleDePrestamo(web3.to_checksum_address(direccion_prestatario), prestamo_id).call()
+        return "Éxito", detalle
+    except ContractLogicError as e:
+        print(f"Error de lógica de contrato: {e}")
+    except  Exception as e:
+        return "Error", str(e)
+
+def get_web3():
+    return web3
