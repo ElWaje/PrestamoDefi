@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QDialog, QFormLayout, QLineEdit, QLabel, QPushButton
 class CredencialesDialog(QDialog):
     def __init__(self, parent=None):
         super(CredencialesDialog, self).__init__(parent)
-        self.setWindowTitle("Ingresar Credenciales\nPara Operar")
+        self.setWindowTitle("Ingresar Credenciales")
         self.setupUI()
 
     def setupUI(self):
