@@ -1,7 +1,6 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QPushButton, QMessageBox, QLabel
 from PyQt5.QtCore import Qt, QDate
 from PyQt5.QtGui import QFont, QColor
-
 from DatosDialog import DatosDialog
 from CredencialesDialog import CredencialesDialog
 from MensajesDialog import MensajesDialog
