@@ -27,22 +27,16 @@ El Sistema DeFi de Gestión de Préstamos es una aplicación de escritorio que s
 ### Instalación
 
 1. Clone el repositorio a su máquina local utilizando:
-
-  ```bash
-  git clone https://github.com/tuUsuario/ProyectoDeFi.git
+    ```bash
+    git clone https://github.com/tuUsuario/ProyectoDeFi.git
 
 2. Instale las dependencias necesarias para el proyecto:
-
-  ```bash
-  pip install PyQt5 web3
-  
+    ```bash
+    pip install PyQt5 web3  
 3. Uso
-
 Para iniciar la aplicación, navegue al directorio del proyecto y ejecute:
-
-  ```bash
-  python main.py
-  
+    ```bash
+    python main.py  
 Esto abrirá la interfaz de usuario de la aplicación, desde donde podrá interactuar con las funcionalidades del sistema DeFi.
 
 ### Despliegue
