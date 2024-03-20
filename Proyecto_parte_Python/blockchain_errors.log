@@ -1,0 +1,19 @@
+2024-03-20 10:31:57,044:ERROR:Error al depositar garantia: 'depositarGarantia' object has no attribute 'estimateGas'
+2024-03-20 10:42:38,039:ERROR:Error al depositar garantia: 'int' object is not callable
+2024-03-20 11:06:54,173:ERROR:Error al enviar la transacción después de 3 intentos: {'message': 'insufficient funds for gas * price + value', 'stack': 'Error: insufficient funds for gas * price + value\n    at TransactionPool.prepareTransaction (C:\\Program Files\\WindowsApps\\GanacheUI_2.7.1.0_x64__rb4352f0jd4m2\\app\\resources\\static\\node\\node_modules\\ganache\\dist\\node\\1.js:2:121341)', 'code': -32003}
+2024-03-20 11:06:54,173:ERROR:Error al depositar garantia: {'message': 'insufficient funds for gas * price + value', 'stack': 'Error: insufficient funds for gas * price + value\n    at TransactionPool.prepareTransaction (C:\\Program Files\\WindowsApps\\GanacheUI_2.7.1.0_x64__rb4352f0jd4m2\\app\\resources\\static\\node\\node_modules\\ganache\\dist\\node\\1.js:2:121341)', 'code': -32003}
+2024-03-20 11:14:09,928:ERROR:Error al enviar la transacción después de 3 intentos: {'message': 'insufficient funds for gas * price + value', 'stack': 'Error: insufficient funds for gas * price + value\n    at TransactionPool.prepareTransaction (C:\\Program Files\\WindowsApps\\GanacheUI_2.7.1.0_x64__rb4352f0jd4m2\\app\\resources\\static\\node\\node_modules\\ganache\\dist\\node\\1.js:2:121341)', 'code': -32003}
+2024-03-20 11:14:09,928:ERROR:Error al depositar garantia: {'message': 'insufficient funds for gas * price + value', 'stack': 'Error: insufficient funds for gas * price + value\n    at TransactionPool.prepareTransaction (C:\\Program Files\\WindowsApps\\GanacheUI_2.7.1.0_x64__rb4352f0jd4m2\\app\\resources\\static\\node\\node_modules\\ganache\\dist\\node\\1.js:2:121341)', 'code': -32003}
+2024-03-20 18:57:34,520:ERROR:Error al depositar garantia: 'Web3' object has no attribute 'toChecksumAddress'
+2024-03-20 19:03:44,697:ERROR:Error al depositar garantia: 'Eth' object has no attribute 'getBalance'
+2024-03-20 19:13:26,088:ERROR:Error al depositar garantia: 'depositarGarantia' object has no attribute 'estimateGas'
+2024-03-20 19:14:45,386:ERROR:Error al depositar garantia: 'depositarGarantia' object has no attribute 'estimateGas'
+2024-03-20 19:18:11,843:ERROR:Error al depositar garantia: 'Eth' object has no attribute 'gasPrice'
+2024-03-20 19:47:42,947:ERROR:Fondos insuficientes para la transacción. Saldo: 100 ETH, Costo requerido: 5000000000000000000.00042128 ETH
+2024-03-20 19:47:42,948:ERROR:Error al depositar garantia: Fondos insuficientes para completar la transacción.
+2024-03-20 19:51:10,828:ERROR:Error al depositar garantia: when sending a str, it must be a hex string. Got: '\n0x30B305291d62C61504e17c40C8926FDEd9b1e710'
+2024-03-20 21:03:10,672:ERROR:Error de valor: when sending a str, it must be a hex string. Got: '\n0x30B305291d62C61504e17c40C8926FDEd9b1e710'
+2024-03-20 22:44:59,132:ERROR:Error al realizar la transacción: 'depositarGarantia' object has no attribute 'buildTransaction'
+2024-03-20 22:44:59,132:ERROR:Error al depositar garantia: 'depositarGarantia' object has no attribute 'buildTransaction'
+2024-03-20 22:50:24,940:ERROR:Error de valor: {'message': 'insufficient funds for gas * price + value', 'stack': 'Error: insufficient funds for gas * price + value\n    at TransactionPool.prepareTransaction (C:\\Program Files\\WindowsApps\\GanacheUI_2.7.1.0_x64__rb4352f0jd4m2\\app\\resources\\static\\node\\node_modules\\ganache\\dist\\node\\1.js:2:121341)', 'code': -32003}
+2024-03-20 22:50:24,940:ERROR:Error de valor: {'message': 'insufficient funds for gas * price + value', 'stack': 'Error: insufficient funds for gas * price + value\n    at TransactionPool.prepareTransaction (C:\\Program Files\\WindowsApps\\GanacheUI_2.7.1.0_x64__rb4352f0jd4m2\\app\\resources\\static\\node\\node_modules\\ganache\\dist\\node\\1.js:2:121341)', 'code': -32003}
