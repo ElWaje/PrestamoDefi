@@ -4,7 +4,7 @@ from PyQt5.QtCore import pyqtSlot
 class DatosDialog(QDialog):
     def __init__(self, accion, parent=None):
         super().__init__(parent)
-        self.setWindowTitle(f"Datos para {accion}")
+        self.setWindowTitle(f"Datos {accion}")
         self.accion = accion
         self.initUI(accion)
     
